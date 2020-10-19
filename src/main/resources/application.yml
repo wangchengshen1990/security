@@ -1,3 +1,12 @@
 logging:
   level:
     com.spring.security : debug
+
+spring:
+  thymeleaf:
+    cache: false # 关闭页面缓存
+    encoding: UTF-8 # 模板编码
+    prefix: classpath:/templates/  # 页面映射路径
+    suffix: .html # 试图后的后缀
+  custom:
+    login-type: string

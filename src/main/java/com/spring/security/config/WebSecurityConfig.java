@@ -8,12 +8,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.web.bind.annotation.PutMapping;
-
-import javax.sql.DataSource;
-import java.security.PublicKey;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 /**
  * @author wcs
@@ -48,10 +47,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
                 .and()
                 .formLogin()
                     .loginPage("/login.html")
-                    .permitAll()//login请求任何请求都可以访问
-                .loginProcessingUrl("/login")
-                .successHandler(cuserAuthenticationSuccessHandler())
-                .failureHandler(cusAuthenticationFailureHandler())
+//
+                   //login请求任何请求都可以访问
+                .loginProcessingUrl("/authentication/form")
+                //配置了successHandler这个就失效了
+                .successForwardUrl("/my/login")
+                //与successForwardUrl选一个
+//                .defaultSuccessUrl("/success")
+                .failureUrl("/login.html")
+//                .successHandler(cuserAuthenticationSuccessHandler())
+                .failureHandler(cusSimpleUrlAuthenticationFailureHandler())
+                .permitAll()
                 .and()
                 .logout()
                     .logoutUrl("/my/logout")
@@ -73,9 +79,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         //ROLE默认是ROLE_开头 可以通过 AccessDecisionManager 实现类AffirmativeBased
         // 中的AccessDecisionVoter的实现类 RoleVoter 的 rolePrefix = "ROLE_" 修改成 NULL;
-       auth.inMemoryAuthentication().withUser("user").password("1234").roles("user");
+       auth.inMemoryAuthentication().withUser("user").password(bCryptPasswordEncoder().encode("1234")).roles("user");
 //       auth.jdbcAuthentication().dataSource(null).usersByUsernameQuery("sql").authoritiesByUsernameQuery("sql").passwordEncoder(new BCryptPasswordEncoder());
 //       auth.userDetailsService(cusUserDetailsService()).passwordEncoder(bCryptPasswordEncoder());
+    }
+
+    @Bean
+    public SimpleUrlAuthenticationFailureHandler cusSimpleUrlAuthenticationFailureHandler(){
+        return new CusSimpleUrlAuthenticationFailureHandler();
+    }
+
+    @Bean
+    public SavedRequestAwareAuthenticationSuccessHandler cusSavedRequestAwareAuthenticationSuccessHandler(){
+        return new CusSavedRequestAwareAuthenticationSuccessHandler();
     }
 
     @Bean
