@@ -4,8 +4,10 @@ import com.google.gson.GsonBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author wcs
@@ -16,6 +18,13 @@ import javax.servlet.http.HttpServletResponse;
 public class CustomLogoutHandler implements LogoutHandler {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        System.out.println("CustomLogoutHandler-->注销后的处理逻辑："+new GsonBuilder().create().toJson(authentication));
+        try {
+            System.out.println("CustomLogoutHandler-->注销后的处理逻辑："+new GsonBuilder().create().toJson(authentication));
+            request.getRequestDispatcher("/logout").forward(request,response);
+        } catch (ServletException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

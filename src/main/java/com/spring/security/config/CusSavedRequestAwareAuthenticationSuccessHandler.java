@@ -46,7 +46,7 @@ public class CusSavedRequestAwareAuthenticationSuccessHandler extends SavedReque
             Cookie cookie = new Cookie("a","b");
             cookie.setMaxAge(10);
             response.addCookie(cookie);
-
+            System.out.println(new GsonBuilder().create().toJson(authentication));
             super.onAuthenticationSuccess(request, response, authentication);
         }
     }

@@ -42,5 +42,21 @@ public class ProController {
         System.out.println("11111");
         return "hello";
     }
+
+    @RequestMapping({"/logout","/login"})
+    public String logout(){
+        return "login";
+    }
+
+    @RequestMapping({"/db"})
+    @ResponseBody
+    public String dba(){
+        return "dba重要信息，dba和admin可以看";
+    }
+    @RequestMapping({"/admin"})
+    @ResponseBody
+    public String admin(){
+        return "admin重要信息，只有admin可以看";
+    }
     //https://www.e-learn.cn/topic/3143567
 }

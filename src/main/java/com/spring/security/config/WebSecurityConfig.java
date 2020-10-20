@@ -1,17 +1,29 @@
 package com.spring.security.config;
 
+import com.sun.tracing.ProbeName;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.vote.AffirmativeBased;
+import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+import org.springframework.security.web.access.expression.WebExpressionVoter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author wcs
@@ -41,11 +53,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
                  //自定义访问权限
                 .antMatchers("/resources/**", "/signup", "/about").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
-                .antMatchers("/db/**").access("hasRole('ADMIN') and hasRole('DBA')")
+//                .antMatchers("/db/**").access("hasAnyRole('ADMIN','DBA')")
+                .antMatchers("/db/**").hasAnyRole("ADMIN","DBA")
                 .anyRequest().authenticated()//如何请求都需要鉴权
                 .and()
                 .formLogin()
-                    .loginPage("/login.html")
+                    .loginPage("/login")
 //
                    //login请求任何请求都可以访问
                 .loginProcessingUrl("/authentication/form")
@@ -57,6 +70,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
                 .successHandler(cusSavedRequestAwareAuthenticationSuccessHandler())
                 .failureHandler(cusSimpleUrlAuthenticationFailureHandler())
                 .permitAll()
+                .and()
+                .exceptionHandling()
+                    .accessDeniedHandler(accessDeniedHandlerImpl())
                 .and()
                 .logout()
                     .logoutUrl("/logout")
@@ -78,11 +94,36 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         //ROLE默认是ROLE_开头 可以通过 AccessDecisionManager 实现类AffirmativeBased
         // 中的AccessDecisionVoter的实现类 RoleVoter 的 rolePrefix = "ROLE_" 修改成 NULL;
-       auth.inMemoryAuthentication().withUser("user").password(bCryptPasswordEncoder().encode("1234")).roles("user");
-//       auth.jdbcAuthentication().dataSource(null).usersByUsernameQuery("sql").authoritiesByUsernameQuery("sql").passwordEncoder(new BCryptPasswordEncoder());
+
+       auth.inMemoryAuthentication().withUser("user").password(bCryptPasswordEncoder().encode("1234")).roles("USER");
+       auth.inMemoryAuthentication().withUser("admin").password(bCryptPasswordEncoder().encode("1234")).roles("ADMIN");
+       auth.inMemoryAuthentication().withUser("dba").password(bCryptPasswordEncoder().encode("1234")).roles("DBA");
+       //       auth.jdbcAuthentication().dataSource(null).usersByUsernameQuery("sql").authoritiesByUsernameQuery("sql").passwordEncoder(new BCryptPasswordEncoder());
 //       auth.userDetailsService(cusUserDetailsService()).passwordEncoder(bCryptPasswordEncoder());
     }
 
+
+    @Bean
+    public AccessDeniedHandlerImpl accessDeniedHandlerImpl(){
+        AccessDeniedHandlerImpl deniedHandler = new AccessDeniedHandlerImpl();
+        //设置403页面获取重写AccessDeniedHandler，自定义AccessDeniedHandler返回错误信息给前台
+        deniedHandler.setErrorPage("/403.html");
+        return deniedHandler;
+    }
+
+    @Bean
+    public GrantedAuthorityDefaults grantedAuthorityDefaults(){
+
+        GrantedAuthorityDefaults defaults = new GrantedAuthorityDefaults("");
+        return defaults;
+    }
+
+    @Bean
+    public RoleVoter roleVoter(){
+        RoleVoter roleVoter = new RoleVoter();
+        roleVoter.setRolePrefix("");
+        return roleVoter;
+    }
     @Bean
     public SimpleUrlAuthenticationFailureHandler cusSimpleUrlAuthenticationFailureHandler(){
         return new CusSimpleUrlAuthenticationFailureHandler();
