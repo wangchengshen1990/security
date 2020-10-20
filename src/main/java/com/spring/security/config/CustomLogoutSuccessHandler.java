@@ -1,5 +1,6 @@
 package com.spring.security.config;
 
+import com.google.gson.GsonBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
@@ -17,6 +18,6 @@ import java.io.IOException;
 public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-
+        System.out.println("CustomLogoutSuccessHandler-->注销后的处理逻辑："+new GsonBuilder().create().toJson(authentication));
     }
 }

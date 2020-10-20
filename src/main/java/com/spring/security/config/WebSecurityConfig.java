@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -51,17 +50,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
                    //login请求任何请求都可以访问
                 .loginProcessingUrl("/authentication/form")
                 //配置了successHandler这个就失效了
-                .successForwardUrl("/my/login")
+//                .successForwardUrl("/my/login")
                 //与successForwardUrl选一个
 //                .defaultSuccessUrl("/success")
                 .failureUrl("/login.html")
-//                .successHandler(cuserAuthenticationSuccessHandler())
+                .successHandler(cusSavedRequestAwareAuthenticationSuccessHandler())
                 .failureHandler(cusSimpleUrlAuthenticationFailureHandler())
                 .permitAll()
                 .and()
                 .logout()
-                    .logoutUrl("/my/logout")
-                    .logoutSuccessUrl("/my/login")
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/login.html")
                     //如果指定了logoutSuccessHandler，logoutSuccessUrl就会失效
                     .logoutSuccessHandler(new CustomLogoutSuccessHandler())
                     //注销HttpSession
@@ -70,7 +69,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
                     //使用logoutSuccessHandler和logoutUrl来创建LogoutFilter
                     .addLogoutHandler(new CustomLogoutHandler())
                     //清除cookie
-                    .deleteCookies("")
+                    .deleteCookies("a")
                 .and()
                 .csrf().disable();
     }
@@ -115,5 +114,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
 
 }

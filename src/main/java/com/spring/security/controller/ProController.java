@@ -1,8 +1,12 @@
 package com.spring.security.controller;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Collection;
 
 /**
  * @author wcs
@@ -26,14 +30,17 @@ public class ProController {
 
     @RequestMapping("/my/login")
     public String myLogin(){
-        System.out.println("11111");
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        System.out.println(principal.toString());
+        System.out.println(authorities.toString());
         return "hello";
     }
 
     @RequestMapping("/success")
     public String success(){
         System.out.println("11111");
-        return "success";
+        return "hello";
     }
     //https://www.e-learn.cn/topic/3143567
 }

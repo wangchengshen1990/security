@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.SavedRequestAwareAuthenti
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class CusSavedRequestAwareAuthenticationSuccessHandler extends SavedReque
     @Autowired
     private browser browser;
 
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
@@ -41,7 +43,16 @@ public class CusSavedRequestAwareAuthenticationSuccessHandler extends SavedReque
             //将authentication认证信息转换为json格式的字符串写到response里面去
             response.getWriter().write(new GsonBuilder().create().toJson(authentication));
         } else {
+            Cookie cookie = new Cookie("a","b");
+            cookie.setMaxAge(10);
+            response.addCookie(cookie);
+
             super.onAuthenticationSuccess(request, response, authentication);
         }
+    }
+    @Override
+    protected String determineTargetUrl(HttpServletRequest request,
+                                        HttpServletResponse response){
+        return "/success";
     }
 }
