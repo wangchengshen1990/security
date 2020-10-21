@@ -1,13 +1,16 @@
 package com.spring.security.config;
 
 import com.sun.tracing.ProbeName;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.access.vote.RoleVoter;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configurers.userdetails.DaoAuthenticationConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -46,15 +49,18 @@ import java.util.List;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
 
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        //HttpSecurity 配置资源路径及处理方式
         http
                 .authorizeRequests()
                  //自定义访问权限
                 .antMatchers("/resources/**", "/signup", "/about").permitAll()
-                .antMatchers("/admin/**").hasRole("ADMIN")
+//                .antMatchers("/admin/**").hasRole("ADMIN")
 //                .antMatchers("/db/**").access("hasAnyRole('ADMIN','DBA')")
-                .antMatchers("/db/**").hasAnyRole("ADMIN","DBA")
+//                .antMatchers("/db/**").hasAnyRole("ADMIN","DBA")
                 .anyRequest().authenticated()//如何请求都需要鉴权
                 .and()
                 .formLogin()
@@ -92,16 +98,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        //AuthenticationManagerBuilder 配置用户信息和认证
         //ROLE默认是ROLE_开头 可以通过 AccessDecisionManager 实现类AffirmativeBased
         // 中的AccessDecisionVoter的实现类 RoleVoter 的 rolePrefix = "ROLE_" 修改成 NULL;
 
-       auth.inMemoryAuthentication().withUser("user").password(bCryptPasswordEncoder().encode("1234")).roles("USER");
-       auth.inMemoryAuthentication().withUser("admin").password(bCryptPasswordEncoder().encode("1234")).roles("ADMIN");
-       auth.inMemoryAuthentication().withUser("dba").password(bCryptPasswordEncoder().encode("1234")).roles("DBA");
+//       auth.inMemoryAuthentication().withUser("user").password(bCryptPasswordEncoder().encode("1234")).roles("USER");
+//       auth.inMemoryAuthentication().withUser("admin").password(bCryptPasswordEncoder().encode("1234")).roles("ADMIN");
+//       auth.inMemoryAuthentication().withUser("dba").password(bCryptPasswordEncoder().encode("1234")).roles("DBA");
        //       auth.jdbcAuthentication().dataSource(null).usersByUsernameQuery("sql").authoritiesByUsernameQuery("sql").passwordEncoder(new BCryptPasswordEncoder());
 //       auth.userDetailsService(cusUserDetailsService()).passwordEncoder(bCryptPasswordEncoder());
+        auth.authenticationProvider(daoAuthenticationProvider());
     }
 
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider(){
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(bCryptPasswordEncoder());
+        provider.setUserDetailsService(customUserDetailsService);
+        return provider;
+    }
 
     @Bean
     public AccessDeniedHandlerImpl accessDeniedHandlerImpl(){
@@ -111,19 +126,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
         return deniedHandler;
     }
 
-    @Bean
-    public GrantedAuthorityDefaults grantedAuthorityDefaults(){
-
-        GrantedAuthorityDefaults defaults = new GrantedAuthorityDefaults("");
-        return defaults;
-    }
-
-    @Bean
-    public RoleVoter roleVoter(){
-        RoleVoter roleVoter = new RoleVoter();
-        roleVoter.setRolePrefix("");
-        return roleVoter;
-    }
+//    @Bean
+//    public GrantedAuthorityDefaults grantedAuthorityDefaults(){
+//
+//        GrantedAuthorityDefaults defaults = new GrantedAuthorityDefaults("");
+//        return defaults;
+//    }
+//
+//    @Bean
+//    public RoleVoter roleVoter(){
+//        RoleVoter roleVoter = new RoleVoter();
+//        roleVoter.setRolePrefix("");
+//        return roleVoter;
+//    }
     @Bean
     public SimpleUrlAuthenticationFailureHandler cusSimpleUrlAuthenticationFailureHandler(){
         return new CusSimpleUrlAuthenticationFailureHandler();
@@ -156,5 +171,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
         return new BCryptPasswordEncoder();
     }
 
-
 }
+
+//https://blog.csdn.net/pujiaolin/article/details/73928491
+//https://blog.csdn.net/u012373815/article/details/54633046

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.security.dao.SysFunctionDao">
+
+    <select id="findAll"  resultType="com.spring.security.entity.SysFunction">
+           SELECT *  FROM sys_function a;
+    </select>
+    <select id="findByUserId" resultType="com.spring.security.entity.SysFunction" parameterType="int">
+        SELECT
+		  e.*
+		FROM
+		  sys_user a
+		  LEFT JOIN sys_user_role b
+		    ON a.`id` = b.`sys_user_id`
+		  LEFT JOIN sys_role c
+		    ON b.`sys_role_id` = c.`id`
+		  LEFT JOIN sys_function_role d
+		    ON d.`sys_role_id` = c.`id`
+		  LEFT JOIN sys_function e
+		    ON e.`id` = d.`sys_function_id`
+		WHERE a.`id` = #{userId} ;
+    </select>
+</mapper>

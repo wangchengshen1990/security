@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.security.dao.SysRoleDao">
+
+
+    <select id="findByUserId" parameterType="int" resultType="com.spring.security.entity.SysRole">
+        select c.* from sys_user a,sys_user_role b ,sys_role c where a.id=b.sys_user_id
+        and b.sys_role_id=c.id and a.id=#{userId}
+    </select>
+</mapper>
